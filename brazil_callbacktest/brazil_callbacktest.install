@@ -1,0 +1,51 @@
+<?php
+/**
+ * Implementation of hook_install().
+ */
+function brazil_callbacktest_install() {
+   drupal_install_schema('brazil_callbacktest');
+}
+
+function brazil_callbacktest_uninstall() {
+  drupal_uninstall_schema('brazil_callbacktest');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function brazil_callbacktest_schema() {
+ 
+  /**
+   * voipcall_recording table
+   * 
+   */
+  $schema['brazil_callbacktest'] = array(
+    'fields' => array(
+       'id' => array(
+        'description' => t('ID'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'call_id' => array(
+        'type' => 'text',  
+        'size' => 'small',     
+      ),
+      'caller_number' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
+      'answers' => array(
+        'type' => 'text', 
+        'size' => 'big',
+      ),
+      'timestamp' => array(
+        'type' => 'int', 
+        'default' => 0,
+      ),
+    ), 
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
