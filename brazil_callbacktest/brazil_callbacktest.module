@@ -5,7 +5,7 @@
 * Load Brazil Callback Test Scripts.
 */
 
-include_once('brazil_callbacktest_voip.scripts.inc');
+include_once('brazil_callbacktest.scripts.inc');
 
 /**
  * Implementation of hook_menu().

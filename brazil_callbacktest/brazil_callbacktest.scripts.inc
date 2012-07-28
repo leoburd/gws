@@ -10,7 +10,6 @@
  */
 function brazil_callbacktest_voipscript_get_script_names() {
   $script_names[] = 'brazil_callbacktest_answer_script';
-  //$script_names[] = 'brazil_callbacktest_call_script';
   return $script_names;
 }
 
@@ -18,25 +17,23 @@ function brazil_callbacktest_voipscript_get_script_names() {
  * Implementation of hook_voipscript_load_script()
  */
 function brazil_callbacktest_voipscript_load_script($script_name, $options=NULL) {
-
   $script = NULL;
   switch ($script_name) {
     default:
       break;
     case 'brazil_callbacktest_answer_script':
-      //Audio blog script for Voice channel
+      $callback_script_name = 'brazil_callbacktest_survey_script';
       $script = new VoipScript('brazil_callbacktest_answer_script');
-      $script->addSet('braziltest_set_call', '^_brazil_callbacktest_set_call(%call_id)');
+      $script->addSet('callback_script_name', $callback_script_name);
+      $script->addSet('braziltest_set_call', '^_brazil_callbacktest_set_callback(%call_id, %callback_script_name)');
       $script->addReject();
       break;
     case 'brazil_callbacktest_callback_script':  
       $script = new VoipScript('brazil_callbacktest_callback_script');
-      $script->addSet('braziltest_caller', '^_brazil_callbacktest_the_caller(%caller_number)');
-      //$script->addReject();
-    break;
-    case 'brazil_callbacktest_call_script':
-      //Audio blog script for Voice channel
-      $script = new VoipScript('brazil_callbacktest_call_script');
+      $script->addSet('braziltest_caller', '^_brazil_callbacktest_exec_callback(%caller_number, %callback_script_name)');
+      break;
+    case 'brazil_callbacktest_survey_script':
+      $script = new VoipScript('brazil_callbacktest_survey_script');
       $script->addSay(v("Welcome to Test Script. Please choose between 0 to 9 in the following questions."));
       
       //Question1
@@ -106,19 +103,28 @@ function brazil_callbacktest_voipscript_load_script($script_name, $options=NULL)
   return $script;
 }
 
-function _brazil_callbacktest_the_caller($caller_number) {
-  watchdog('brazil_callbacktest', "Caller number $caller_number");
-  //sleep(2);
-  $script = VoipScript::loadScript('brazil_callbacktest_call_script', $vars);
+function _brazil_callbacktest_set_callback($call_id) {
+  $cid = VoipCall::getCidFromCallId($call_id);
+  watchdog('brazil_callbacktest', "Call id $call_id and cid $cid");
+  $call = VoipCall::load($cid);
+  $call->setHangupScriptName('brazil_callbacktest_callback_script');
+  $call->save();
+}
 
+function _brazil_callbacktest_exec_callback($caller_number, $callback_script_name) {
+  watchdog('brazil_callbacktest', "_exec_callback($caller_number, $callback_script_name)");
+  // wait a little for the caller to hang up
+watchdog('brazil_callbacktest', "sleep: " . time());
+  sleep(10);
+watchdog('brazil_callbacktest', "wake up: " . time());
+  // create the new call
   $call = new VoipCall();
   $call->setDestNumber($caller_number);
   $call->setCallerName('Brazil CallBack Test Script');
-  $call->setScript($script);
- 
+  $callback_script = VoipScript::loadScript($callback_script_name, $vars);
+  $call->setScript($callback_script);
   $call->save();
-    
-  // Dial the call.
+  // Execute the callback
   voip_dial($call);
 }
 
@@ -134,10 +140,3 @@ function _brazil_callbacktest_save($call_id, $caller_number, $answer1, $answer2,
   return $res;
 }
 
-function _brazil_callbacktest_set_call($call_id) {
-  $cid = VoipCall::getCidFromCallId($call_id);
-  watchdog('brazil_callbacktest', "Call id $call_id and cid $cid");
-  $call = VoipCall::load($cid);
-  $call->setHangupScriptName('brazil_callbacktest_callback_script');
-  $call->save();
-}
