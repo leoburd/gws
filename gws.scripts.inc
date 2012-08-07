@@ -22,16 +22,20 @@ function gws_voipscript_load_script($script_name, $options=NULL) {
     default:
       break;
     case 'gws_answer_script':
+watchdog('debug', 'in: gws_answer_script');
       $callback_script_name = 'gws_survey_script';
       $script = new VoipScript('gws_answer_script');
-      $script->addSet('gws_callback_result', "^_voipscript_set_callback(%call_id, $callback_script_name)");
+      $script->addSet('callback_script_name', $callback_script_name);
+      $script->addSet('gws_callback_result', "^_voipscript_set_callback(%cid)");
       $script->addReject();
       break;
-    case 'voipscript_callback_script':  
-      $script = new VoipScript('voipscript_callback_script');
+    case 'voipscript_exec_callback_script':  
+watchdog('debug', 'in: voipscript_exec_callback_script');
+      $script = new VoipScript('voipscript_exec_callback_script');
       $script->addSet('voipscript_callback_result', '^_voipscript_exec_callback(%caller_number, %callback_script_name)');
       break;
     case 'gws_survey_script':
+watchdog('debug', 'in: gws_survey_script');
       $script = new VoipScript('gws_survey_script');
       $script->addSay(v("Welcome to Test Script. Please choose between 0 to 9 in the following questions."));
       
@@ -102,17 +106,15 @@ function gws_voipscript_load_script($script_name, $options=NULL) {
   return $script;
 }
 
-function _voipscript_set_callback($call_id, $script_name) {
-  $cid = VoipCall::getCidFromCallId($call_id);
+function _voipscript_set_callback($cid) {
+watchdog('debug', "in:  _set_callback($cid)");
   $call = VoipCall::load($cid);
-  $script = $call->getScript();
-  $script->addSet('callback_script_name', $script_name);
-  $call->setHangupScriptName('voipscript_callback_script');
+  $call->setHangupScriptName('voipscript_exec_callback_script');
   $call->save();
 }
 
 function _voipscript_exec_callback($caller_number, $callback_script_name) {
-  watchdog('voipscript', "_exec_callback($caller_number, $callback_script_name)");
+  watchdog('debug', "in: _exec_callback($caller_number, $callback_script_name)");
   // wait a little for the caller to hang up
   sleep(10);
   // create the new call
