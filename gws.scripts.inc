@@ -24,13 +24,12 @@ function gws_voipscript_load_script($script_name, $options=NULL) {
     case 'gws_answer_script':
       $callback_script_name = 'gws_survey_script';
       $script = new VoipScript('gws_answer_script');
-      $script->addSet('callback_script_name', $callback_script_name);
-      $script->addSet('braziltest_set_call', '^_gws_set_callback(%call_id, %callback_script_name)');
+      $script->addSet('gws_callback_result', "^_voipscript_set_callback(%call_id, $callback_script_name)");
       $script->addReject();
       break;
-    case 'gws_callback_script':  
-      $script = new VoipScript('gws_callback_script');
-      $script->addSet('braziltest_caller', '^_gws_exec_callback(%caller_number, %callback_script_name)');
+    case 'voipscript_callback_script':  
+      $script = new VoipScript('voipscript_callback_script');
+      $script->addSet('voipscript_callback_result', '^_voipscript_exec_callback(%caller_number, %callback_script_name)');
       break;
     case 'gws_survey_script':
       $script = new VoipScript('gws_survey_script');
@@ -103,22 +102,22 @@ function gws_voipscript_load_script($script_name, $options=NULL) {
   return $script;
 }
 
-function _gws_set_callback($call_id) {
+function _voipscript_set_callback($call_id, $script_name) {
   $cid = VoipCall::getCidFromCallId($call_id);
-  watchdog('gws', "Call id $call_id and cid $cid");
   $call = VoipCall::load($cid);
-  $call->setHangupScriptName('gws_callback_script');
+  $script = $call->getScript();
+  $script->addSet('callback_script_name', $script_name);
+  $call->setHangupScriptName('voipscript_callback_script');
   $call->save();
 }
 
-function _gws_exec_callback($caller_number, $callback_script_name) {
-  watchdog('gws', "_exec_callback($caller_number, $callback_script_name)");
+function _voipscript_exec_callback($caller_number, $callback_script_name) {
+  watchdog('voipscript', "_exec_callback($caller_number, $callback_script_name)");
   // wait a little for the caller to hang up
   sleep(10);
   // create the new call
   $call = new VoipCall();
   $call->setDestNumber($caller_number);
-  $call->setCallerName('Brazil CallBack Test Script');
   $callback_script = VoipScript::loadScript($callback_script_name, $vars);
   $call->setScript($callback_script);
   $call->save();
