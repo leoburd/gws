@@ -48,7 +48,7 @@ $headers = array(
         'answer2' => $answers['answer2'],
         'answer3' => $answers['answer3'],
         'answer4' => $answers['answer4'],
-        'date' => date('d/m/Y', $tmp['timestamp']),
+        'date' => date('m/d/Y', $tmp['timestamp']),
         'time' => date('h:i:s A', $tmp['timestamp']),
       );
     }
