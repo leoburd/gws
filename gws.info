@@ -1,6 +1,6 @@
 ; $Id$
 core = "6.x"
 dependencies[] = "voipcall"
-description = "Brazil Callback Test"
+description = "Brazil callback test for Good World Solutions"
 name = "Brazil Callback Test"
 package = "VoIP Drupal"

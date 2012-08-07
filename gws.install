@@ -2,24 +2,24 @@
 /**
  * Implementation of hook_install().
  */
-function brazil_callbacktest_install() {
-   drupal_install_schema('brazil_callbacktest');
+function gws_install() {
+   drupal_install_schema('gws');
 }
 
-function brazil_callbacktest_uninstall() {
-  drupal_uninstall_schema('brazil_callbacktest');
+function gws_uninstall() {
+  drupal_uninstall_schema('gws');
 }
 
 /**
  * Implementation of hook_schema().
  */
-function brazil_callbacktest_schema() {
+function gws_schema() {
  
   /**
    * voipcall_recording table
    * 
    */
-  $schema['brazil_callbacktest'] = array(
+  $schema['gws'] = array(
     'fields' => array(
        'id' => array(
         'description' => t('ID'),
