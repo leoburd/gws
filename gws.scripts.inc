@@ -2,7 +2,7 @@
 // $Id$
 /**
 * @file
-* Brazil callback test for Global World Solutions (GWS)
+* Callback test for Global World Solutions (GWS)
 */
 
 /**
@@ -22,20 +22,14 @@ function gws_voipscript_load_script($script_name, $options=NULL) {
     default:
       break;
     case 'gws_answer_script':
-watchdog('debug', 'in: gws_answer_script');
       $callback_script_name = 'gws_survey_script';
       $script = new VoipScript('gws_answer_script');
       $script->addSet('callback_script_name', $callback_script_name);
-      $script->addSet('gws_callback_result', "^_voipscript_set_callback(%cid)");
+      $script->addSet('gws_callback_result', "^voipscript_set_callback(%cid)");
       $script->addReject();
       break;
-    case 'voipscript_exec_callback_script':  
-watchdog('debug', 'in: voipscript_exec_callback_script');
-      $script = new VoipScript('voipscript_exec_callback_script');
-      $script->addSet('voipscript_callback_result', '^_voipscript_exec_callback(%caller_number, %callback_script_name)');
-      break;
+
     case 'gws_survey_script':
-watchdog('debug', 'in: gws_survey_script');
       $script = new VoipScript('gws_survey_script');
       $script->addSay(v("Welcome to Test Script. Please choose between 0 to 9 in the following questions."));
       
@@ -104,27 +98,6 @@ watchdog('debug', 'in: gws_survey_script');
   }
 
   return $script;
-}
-
-function _voipscript_set_callback($cid) {
-watchdog('debug', "in:  _set_callback($cid)");
-  $call = VoipCall::load($cid);
-  $call->setHangupScriptName('voipscript_exec_callback_script');
-  $call->save();
-}
-
-function _voipscript_exec_callback($caller_number, $callback_script_name) {
-  watchdog('debug', "in: _exec_callback($caller_number, $callback_script_name)");
-  // wait a little for the caller to hang up
-  sleep(10);
-  // create the new call
-  $call = new VoipCall();
-  $call->setDestNumber($caller_number);
-  $callback_script = VoipScript::loadScript($callback_script_name, $vars);
-  $call->setScript($callback_script);
-  $call->save();
-  // Execute the callback
-  voip_dial($call);
 }
 
 function _gws_save($call_id, $caller_number, $answer1, $answer2, $answer3, $answer4) {
